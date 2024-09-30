@@ -5,10 +5,10 @@ const int PIN_1B = 5;
 const int PIN_1C = 4;
 const int PIN_1D = 3;
 
-const int PIN_2A = 11;
-const int PIN_2B = 10;
-const int PIN_2C = 9;
-const int PIN_2D = 8;
+const int PIN_2A = 8;
+const int PIN_2B = 9;
+const int PIN_2C = 10;
+const int PIN_2D = 11;
 
 const int PIN_VDD = 17;
 const int PIN_GND = 18;
@@ -43,8 +43,8 @@ enum BotonIR {
 
 const size_t DELAY_TOTAL_MS = 200;
 const int MAX = 3;
-const int DELAY_MINIMO = 3;
-const int DELAY_VALOCIDAD[MAX + 1] = {0, 12, 6, DELAY_MINIMO};
+const int DELAY_MINIMO = 4;
+const int DELAY_VALOCIDAD[MAX + 1] = {0, 4* DELAY_MINIMO, 2 * DELAY_MINIMO, DELAY_MINIMO};
 
 const BotonIR ADELANTE = DOS;
 const BotonIR ATRAS = OCHO;
@@ -150,7 +150,6 @@ void settear_stepper(size_t delay_total) {
   while (delay_total > menor_delay) {
     dato_izq.avanzar(menor_delay);
     dato_der.avanzar(menor_delay);
-    Serial.println(menor_delay);
 
     delay_total -= menor_delay;
 
@@ -168,7 +167,6 @@ int delay_para_velocidad(int velocidad, size_t delay_maximo) {
 }
 
 void loop() {
-
   if (IrReceiver.decode()) {
     // Modificamos el dato para obtener otros valores
     IRRawDataType info = IrReceiver.decodedIRData.decodedRawData;
@@ -189,41 +187,39 @@ void loop() {
         Serial.println("atras");
         break;
       case IZQUIERDA: 
-        if (velocidad_izq >= MAX || velocidad_der >= MAX) {
-          velocidad_izq -= 2;
-        } else if (-velocidad_izq >= MAX || -velocidad_der >= MAX) {
-          velocidad_der += 2;
-        } else {
+        if (velocidad_der < MAX) {
+          velocidad_der++;          
+        } else if (-velocidad_izq < MAX) {
           velocidad_izq--;
-          velocidad_der++; 
         }
         Serial.println("izquierda");
         break;
       case DERECHA: 
-        if (velocidad_izq >= MAX || velocidad_der >= MAX) {
-          velocidad_der -= 2;
-        } else if (-velocidad_izq >= MAX || -velocidad_der >= MAX) {
-          velocidad_izq += 2;
-        } else {
+        if (velocidad_izq < MAX) {
           velocidad_izq++;
+        } else if (-velocidad_der < MAX) {
           velocidad_der--;
-        }        
+        }
         Serial.println("derecha");
         break;
       case FRENAR: 
         velocidad_izq = 0;
         velocidad_der = 0;
+        Serial.println("frenar");
         break;
     }
     
+    Serial.print("izq: ");
+    Serial.print(delay_para_velocidad(velocidad_izq, DELAY_TOTAL_MS));
+    Serial.print(" der: ");
+    Serial.println(delay_para_velocidad(velocidad_der, DELAY_TOTAL_MS));
+    
     IrReceiver.resume();
   }  
-
-  Serial.println(delay_para_velocidad(velocidad_izq, DELAY_TOTAL_MS));
-  Serial.println(delay_para_velocidad(velocidad_der, DELAY_TOTAL_MS));
 
   dato_izq.nuevaDelay(delay_para_velocidad(velocidad_izq, DELAY_TOTAL_MS));
   dato_der.nuevaDelay(delay_para_velocidad(velocidad_der, DELAY_TOTAL_MS));
 
   settear_stepper(DELAY_TOTAL_MS);
+  
 }

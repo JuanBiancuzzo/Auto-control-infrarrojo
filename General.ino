@@ -160,7 +160,7 @@ void settear_stepper(size_t delay_total) {
   dato_der.avanzar(delay_total);
 }
 
-int delay_para_velocidad(int velocidad, size_t delay_maximo) {
+int delay_para_velocidad(int velocidad) {
   if (velocidad > MAX)
     return DELAY_MINIMO;
   return (velocidad > 0 ? 1 : -1) * DELAY_VALOCIDAD[abs(velocidad)];
@@ -210,15 +210,15 @@ void loop() {
     }
     
     Serial.print("izq: ");
-    Serial.print(delay_para_velocidad(velocidad_izq, DELAY_TOTAL_MS));
+    Serial.print(delay_para_velocidad(velocidad_izq));
     Serial.print(" der: ");
-    Serial.println(delay_para_velocidad(velocidad_der, DELAY_TOTAL_MS));
+    Serial.println(delay_para_velocidad(velocidad_der));
     
     IrReceiver.resume();
   }  
 
-  dato_izq.nuevaDelay(delay_para_velocidad(velocidad_izq, DELAY_TOTAL_MS));
-  dato_der.nuevaDelay(delay_para_velocidad(velocidad_der, DELAY_TOTAL_MS));
+  dato_izq.nuevaDelay(delay_para_velocidad(velocidad_izq));
+  dato_der.nuevaDelay(delay_para_velocidad(velocidad_der));
 
   settear_stepper(DELAY_TOTAL_MS);
   

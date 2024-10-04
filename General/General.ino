@@ -60,6 +60,7 @@ const int PASO[4][4] = {
   {0, 0, 1, 1},
   {1, 0, 0, 1}
 };
+const int NULO[4] = {0, 0, 0, 0};
 
 void settearPines(int* pines, int* paso) {
   for (int i = 0; i < 4; i++) 
@@ -100,6 +101,10 @@ struct Dato {
       ? (_pos + 1) % 4 
       : (_pos + 3) % 4;
   }
+
+  void nulo() {
+    settearPines(_pines, NULO);
+  }
 };
 
 Dato dato_izq = Dato(0, PINES_IZQ);
@@ -130,12 +135,21 @@ void setup() {
 
 void settear_stepper(size_t delay_total) {
   if (dato_izq.Delay == 0 && dato_der.Delay == 0) {
+    dato_izq.nulo();
+    dato_der.nulo();
     delay(delay_total);
     return;
   }
 
   if (dato_izq.Delay == 0 || dato_der.Delay == 0) {
-    Dato dato = dato_izq.Delay == 0 ? dato_der : dato_izq;
+    Dato dato = dato_der;
+    if (dato_izq.Delay == 0) {
+      dato = dato_der;
+      dato_izq.nulo();
+    } else {
+      dato = dato_izq;
+      dato_der.nulo();
+    }
 
     while (delay_total > dato.Delay) {
       dato.avanzar(dato.Delay);

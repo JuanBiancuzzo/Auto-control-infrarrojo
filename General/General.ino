@@ -167,54 +167,61 @@ int delay_para_velocidad(int velocidad, size_t delay_maximo) {
   return (velocidad > 0 ? 1 : -1) * DELAY_VALOCIDAD[abs(velocidad)];
 }
 
+void definirVelocidades(IRRawDataType info) {
+  switch (info) {
+    case ADELANTE: 
+      if (velocidad_izq < MAX && velocidad_der < MAX) {
+        velocidad_izq++;
+        velocidad_der++;
+      }
+      break;
+    
+    case ATRAS:
+      if (-MAX < velocidad_izq && -MAX < velocidad_der) {
+        velocidad_izq--;
+        velocidad_der++;
+      }
+      break;
+    
+    case IZQUIERDA: 
+      if (velocidad_izq >= MAX || velocidad_der >= MAX) {
+        velocidad_izq -= 2;
+      } else if (-velocidad_izq >= MAX || -velocidad_der >= MAX) {
+        velocidad_der += 2;
+      } else {
+        velocidad_izq--;
+        velocidad_der++; 
+      }
+      break;
+    
+    case DERECHA: 
+      if (velocidad_izq >= MAX || velocidad_der >= MAX) {
+        velocidad_der -= 2;
+      } else if (-velocidad_izq >= MAX || -velocidad_der >= MAX) {
+        velocidad_izq += 2;
+      } else {
+        velocidad_izq++;
+        velocidad_der--;
+      }  
+      break;
+    
+    case FRENAR: 
+      velocidad_izq = 0;
+      velocidad_der = 0;
+      break;
+    
+    default: Serial.println("No es un código definido");
+  }
+}
+
 void loop() {
 
   if (IrReceiver.decode()) {
     // Modificamos el dato para obtener otros valores
     IRRawDataType info = IrReceiver.decodedIRData.decodedRawData;
     
-    switch (info) {
-      case ADELANTE: 
-        if (velocidad_izq < MAX && velocidad_der < MAX) {
-          velocidad_izq++;
-          velocidad_der++; 
-        }
-        Serial.println("Adelante");
-        break;
-      case ATRAS: 
-        if (-velocidad_izq < MAX && -velocidad_der < MAX) {
-          velocidad_izq--;
-          velocidad_der--; 
-        }
-        Serial.println("atras");
-        break;
-      case IZQUIERDA: 
-        if (velocidad_izq >= MAX || velocidad_der >= MAX) {
-          velocidad_izq -= 2;
-        } else if (-velocidad_izq >= MAX || -velocidad_der >= MAX) {
-          velocidad_der += 2;
-        } else {
-          velocidad_izq--;
-          velocidad_der++; 
-        }
-        Serial.println("izquierda");
-        break;
-      case DERECHA: 
-        if (velocidad_izq >= MAX || velocidad_der >= MAX) {
-          velocidad_der -= 2;
-        } else if (-velocidad_izq >= MAX || -velocidad_der >= MAX) {
-          velocidad_izq += 2;
-        } else {
-          velocidad_izq++;
-          velocidad_der--;
-        }        
-        Serial.println("derecha");
-        break;
-      case FRENAR: 
-        velocidad_izq = 0;
-        velocidad_der = 0;
-        break;
-    }
+    // Determina nuevo valores para velocidad_izq y velocidad_der
+    definirVelocidades(info); 
     
     IrReceiver.resume();
   }  
